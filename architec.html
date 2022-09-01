@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+	<HEAD>
+		<META CONTENT="text/html; charset=iso-8859-1" HTTP-EQUIV="Content-Type">
+		<META NAME="Generator" CONTENT="PhotoImpact">
+        <STYLE type="text/css">
+       <!--
+		BODY {font-family:verdana;color: #000000;}
+        .monstyle  { font-family: Verdana; font-size: 13px;}
+        -->
+	  </STYLE>
+	</HEAD>
+	<BODY TOPMARGIN="0" LEFTMARGIN="10" MARGINWIDTH="10" MARGINHEIGHT="10">
+    	<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">
+    	  <TR>
+    	     <TD align="center"><u><b>ARCHITECTURE&nbsp;DU&nbsp;PROJET</b></u><p>&nbsp;</TD>
+          </TR>
+    	  <TR>
+    	     <TD><IMG SRC="images/Architecture_1.jpg" WIDTH="998" BORDER="0" HEIGHT="542"><p>&nbsp;</TD>
+          </TR>
+    	  <TR>
+    	     <TD align="left" class="monstyle">
+ <h1>Couche WEB</h1>
+<b><u>Etapes :</u></b><br>
+<ol>
+<li>le client fait une demande au contrôleur. Celui-ci voit passer toutes les demandes des clients. C'est la porte d'entrée de
+l'application. C'est le <b>C</b> de <b>MVC</b>. Ici le contrôleur est assuré par une servlet générique (<b>personnes</b>) :<br>
+<b>org.springframework.web.servlet.DispatcherServlet</b><p>
+<li>le contrôleur principal <b>personnes</b>  [<b>DispatcherServlet</b>]  fait exécuter   l'action demandée par  l'utilisateur par une classe  implémentant
+l'interface :<br>
+<b>org.springframework.web.servlet.mvc.Controller </b> <br>
+A cause du nom de l'interface, nous appellerons une telle classe un contrôleur secondaire pour le distinguer du contrôleur
+principal <b>personnes</b>[<b>DispatcherServlet</b>] ou simplement contrôleur lorsqu'il n'y a pas d'ambiguïté. Le schéma ci-dessus présente les contrôleurs implémentés dans l'application. Il y a en général plusieurs contrôleurs, un par action.<p>
+<li>le contrôleur(un parmit les contrôleurs) [<b>Controller</b>] traite une demande particulière de l'utilisateur. Pour ce faire, il peut avoir besoin de l'aide de la
+couche métier. Une fois la demande du client traitée, celle-ci peut appeler diverses réponses.<p>
+<li>le contrôleur choisit  la réponse (= vue) à envoyer au client.  Choisir  la réponse à envoyer au client nécessite plusieurs
+étapes :<br>
+<ul>
+
+<li>  choisir l'objet qui  va générer la réponse.  C'est ce qu'on appelle la vue <b> V</b>,  le  <b>V</b>  de <b>MVC</b>. Ce choix dépend en
+général du résultat de l'exécution de l'action demandée par l'utilisateur.
+<li> lui fournir les données dont il a besoin pour générer cette réponse. En effet, celle-ci contient le plus souvent des
+informations  calculées  par   la  <b>couche  métier </b> ou  le  contrôleur   lui-même.  Ces   informations   forment  ce  qu'on
+appelle le modèle <b>M </b>de la vue, le <b>M </b>de <b>MVC</b>. <b>Spring MVC</b> fournit ce modèle sous la forme d'un dictionnaire de
+type <b>java.util.Map</b>.
+</ul><br>
+L'étape 4 consiste donc en le choix d'une vue <b>V</b> et la construction du modèle <b>M</b> nécessaire à celle-ci.<p>
+<li>le contrôleur <b>personnes</b> [<b>DispatcherServlet</b>] demande à la vue choisie de s'afficher. Il s'agit d'une classe implémentant l'interface<br>
+<b>org.springframework.web.servlet.View</b> <br>
+<b>Spring MVC</b> propose différentes  implémentations de cette  interface pour générer  des flux HTML,  Excel,  PDF,   ...  Le
+schéma ci-dessus présente les vues implémentées dans l'application. Il y a en général plusieurs vues.<p>
+<li>le   générateur   de   vue  View  utilise   le  modèle  Map  préparé   par   le   contrôleur  Controller  pour   initialiser   les   parties
+dynamiques de la réponse qu'il doit envoyer au client.
+<li>la réponse est envoyée au client. La forme exacte de celle-ci dépend du générateur de vue. Ce peut être un flux HTML,
+PDF, Excel, ...</ol><p>
+Examinons le traitement d'une demande du client sous un aspect un peu plus technique :<p>
+<b><u>Etapes 1-2 :</u></b> choix du contrôleur traitant l'action demandée par l'utilisateur<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Avec <b>Spring MVC</b>, c'est à partir de l'URL demandée par le client que le contrôleur principal <b>personnes</b>[<b>DispatcherServlet</b>] va choisir l'objet
+[<b>Controller</b>] qui va traiter l'action. Le <b>lien</b> URL <-> Controller est fait par configuration.
+<b>Spring</b> met à notre disposition diverses stratégies pour  lier une URL à un objet [<b>Controller</b>]. Le choix d'une
+stratégie particulière est fait dans le fichier de configuration [<b>personnes-servlet.xml</b>] de la servlet <b>personnes </b>de l'application  en précisant
+le nom d'une classe implémentant l'interface [<b>org.springframework.web.servlet.HandlerMapping</b>].Il existe plusieurs méthodes de résolution
+possibles, c.a.d. plusieurs façons possibles de lier une URL à un objet [<b>Controller</b>]. La methode de résolution utilisée dans l'application est:<br>
+ [<b>SimpleUrlHandlerMapping</b>]  : avec cette classe,   chaque URL [http://machine:port/chemin1/.../document  ] devant
+être traitée par l'application est déclarée dans le fichier de configuration de la servlet. Dans cette déclaration , on associe à
+[/document] le nom de l'objet [<b>Controller</b>] qui doit la traiter.<p>
+<b><u>Etapes 3-5 :</u></b> traitement de la demande par l'objet [Controller]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;L'objet   [<b>Controller</b>]   chargé   de   traiter   l'action   est   une   instance   de   classe   implémentant   l'interface <br>
+[<b>org.springframework.web.servlet.mvc.Controller</b>]. <p>
+&nbsp;&nbsp;&nbsp;&nbsp;Dans notre application , le fichier [<b>applicationContext.xml</b>] joue le rôle de " <b>parent</b> " du fichier [<b>personnes-servlet.xml</b>] de définition des servlets de l'application.<b>Spring</b> permet en effet de créer une relation parent - fils entre deux fichiers de configuration. Les
+beans définis dans le fichier parent sont automatiquement connus du fichier fils. C'est donc dans ce fichier que nous avons placé la configuration des
+couches [<b>métier</b>] et [<b>dao</b>] de l'application. Le fichier [applicationContext.xml] doit être placé dans le dossier [<b>WEB-INF</b>].
+Pour que le fichier [<b>applicationContext.xml</b>] soit reconnu et exploité, l'application doit charger une classe spéciale de
+type   [<b>org.springframework.web.context.ContextLoaderListener</b>].  Cette   classe   va   exploiter   le   fichier   [<b>applicationContext.xml</b>]   et
+instancier les beans qui y sont définis. Parce que ceux-ci doivent être instanciés avant ceux définis par le fichier  [<b>personnes-servlet.xml</b>], la
+classe [<b>org.springframework.web.context.ContextLoaderListener</b>] doit être instanciée avant la classe [<b>DispatcherServlet</b>] qui elle, va
+exploiter le fichier [personnes-servlet.xml]. Cela est fait dans le fichier [<b>web.xml</b>].<br>
+C'est ainsi que le Le champ privé  [<b>service</b>]  des contrôleurs va donc être  initialisé dans [<b>personnes-servlet.xml</b>] par le bean d'id "<b>service</b>" défini dans [<b>applicationContext.xml</b>]. Lorsque la méthode [<b>handleRequestest</b>] des contrôleurs est exécutée, le champ privé [<b>service</b>] aura donc déjà sa valeur. Nous pouvions nous même récupéré le bean d'id "<b>service</b>" défini dans [<b>applicationContext.xml</b>] par l'instrution "<b>service = request.getSession().getServletContext().getAttribute("groupe");</b>", mais nous avions préféré déléguer cette tâche a <b>Spring</b>.<p>
+<h1>Couches [DAO] et [SERVICE]</h1>
+<b><u>Dossier [src]</u></b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ce dossier contient les codes source des couches [dao] et [service].<p>
+<b><u>Dossier [dbannuiare]</u></b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ce dossier est la base de donnée du projet. Il doit être copié dans le dossier <b>[data]</b> de MySql.<p>
+<b><u>Dossier [lib] du dossier [WEB-INF]</u></b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ce dossier contient les archives nécessaires à l’application<p>
+<b><u>La couche [dao]</u></b><br>
+La couche [dao] est constituée des classes et interfaces suivantes :<br>
+<ul>
+<li>[<b>IDao.java</b>] est l’interface présentée par la couche [dao]
+<li>[<b>DaoImplCommon.java</b>] Implémente l'interface IDao et dérive la classe
+[<b>SqlMapClientDaoSupport</b>] de <b>SpringORM</b> (package <b>org.springframework.orm.ibatis.support.SqlMapClientDaoSupport</b>).
+<li>[<b>DaoException.java</b>] est  le  type des exceptions non contrôlées,  lancées par  la couche [dao].
+</ul> <p>
+<b><u>La couche d’accès aux données [iBATIS]</u></b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;La   classe   SpringORM   [<b>SqlMapClientDaoSupport</b>]   utilise   un   framework   tierce   [<b>Ibatis   SqlMap</b>]   disponible   à   l’url
+[<b>http://ibatis.apache.org/</b>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;L’utilisation du framework [<b>iBATIS</b>] nécessite deux archives [<b>ibatis-common, ibatis-sqlmap</b>] qui ont été toutes deux placées
+dans le dossier [<b>lib</b>] du projet.<br>
+&nbsp;&nbsp;&nbsp;Parmi les méthodes de la classe [<b>SqlMapClientDaoSupport</b>], l’une d’elles permet de configurer le client [<b>iBATIS</b>] avec lequel nous avons exploité la base de
+données: <b>void <u>setSqlMapClient</u>(com.ibatis.sqlmap.client.SqlMapClient sqlMapClient)</b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;L’objet   [<b>SqlMapClient  sqlMapClient</b>]  est   l’objet   [<b>IBATIS</b>]  utilisé pour  accéder  à la base de données.  A  lui   tout  seul,   il
+implémente la couche [<b>iBATIS</b>] de notre architecture.
+Une séquence typique d’actions avec cet objet est la suivante :
+<ol>
+<li> demander une connexion à un pool de connexions
+<li> ouvrir une transaction
+<li> exécuter une série d’ordres SQL mémorisée dans un fichier de configuration
+<li> fermer la transaction
+<li> rendre la connexion au pool
+</ol>
+Si notre implémentation [<b>DaoImplCommon</b>] travaillait directement avec [<b>iBATIS</b>], elle devrait faire cette séquence de façon
+répétée.  Seule   l’opération 3  est   spécifique   à  une   couche   [<b>dao</b>], les   autres  opérations   étant  génériques.  La   classe  Spring
+[<b>SqlMapClientDaoSupport</b>] assurera elle-même les opérations 1, 2, 4 et 5, déléguant l’opération 3 à sa classe dérivée, ici la
+classe [<b>DaoImplCommon</b>]. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;Pour pouvoir fonctionner,   la classe [<b>SqlMapClientDaoSupport</b>] a besoin d’une référence sur  l’objet   iBATIS [<b>SqlMapClient
+sqlMapClient</b>] qui va assurer le dialogue avec la base de données. Cet objet a besoin de deux choses pour fonctionner :
+<ul>
+<li>un objet [<b>DataSource</b>] connecté à la base de données auprès duquel il va demander des connexions
+<li>un (ou des) fichier de configuration où sont externalisés <b>les ordres SQL</b> à exécuter. En effet, ceux-ci ne sont pas dans
+le code Java. Ils sont identifiés par un code dans un fichier de configuration et l’objet [<b>SqlMapClient sqlMapClient</b>]
+utilise ce code pour faire exécuter un ordre SQL particulier. </ul>
+&nbsp;&nbsp;&nbsp;&nbsp;Un embryon de configuration de notre couche [<b>dao</b>] qui refléterait l'architecture ci-dessus serait le suivant : (cette config est  dans le fichier [<b>applicationContext.xml</b>]) <br>
+<IMG SRC="images/config.jpg"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ici   la propriété [<b>sqlMapClient</b>] (ligne 3)  de  la classe  [<b>DaoImplCommon</b>] (ligne 2)  est   initialisée.  Elle  l’est  par   la méthode
+[<b>setSqlMapClient</b>]   de   la   classe   [<b>DaoImplCommon</b>].   Cette   classe   n’a   pas   cette   méthode.   C’est   sa   classe   parent
+[<b>SqlMapClientDaoSupport</b>] qui l’a. C’est donc elle qui est en réalité initialisée ici.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Maintenant ligne 4, on fait référence à un objet nommé " sqlMapClient " qui reste à construire. Celui-ci, on l’a dit, est de type
+[<b>SqlMapClient</b>], un type [<b>iBATIS</b>] :  <b>com.ibatis.sqlmap.client.SqlMapClient </b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;[<b>SqlMapClient</b>] est une interface. SpringORM offre la classe [<b>SqlMapClientFactoryBean</b>] pour obtenir un objet implémentant cette
+interface : <b>org.springframework.orm.ibatis.SqlMapClientFactoryBean </b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Rappelons que nous cherchons à instancier un objet implémentant l’interface [<b>SqlMapClient</b>]. Ce n’est apparemment pas le cas
+de la classe [<b>SqlMapClientFactoryBean</b>]. Celle-ci implémente l’interface [<b>FactoryBean</b>] (cf ci-dessus). Celle-ci a la méthode
+[<b>getObject()</b>] suivante :  Objet <u>getObject</u>();  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;Lorsqu’on demande à Spring une instance d’un objet implémentant l’interface [<b>FactoryBean</b>], il :
+<ul>
+<li> crée une instance [<b>I</b>] de la classe - ici il crée une instance de type [<b>SqlMapClientFactoryBean</b>].
+<li>rend à la méthode appelante, le résultat de la méthode [<b>I</b>].getObject() - la méthode
+[<b>SqlMapClientFactoryBean</b>].getObject() va rendre ici un objet implémentant l’interface [<b>SqlMapClient</b>].
+</ul>
+&nbsp;&nbsp;&nbsp;&nbsp;Pour pouvoir rendre un objet implémentant l’interface [<b>SqlMapClient</b>], la classe [<b>SqlMapClientFactoryBean</b>] a besoin de deux
+informations nécessaires à cet objet :
+<ul>
+<li> un objet [DataSource] connecté à la base de données auprès duquel il va demander des connexions
+<li>un (ou des) fichier de configuration où sont externalisés les ordres SQL à exécuter
+</ul>
+La classe [SqlMapClientFactoryBean] possède les méthodes set pour initialiser ces deux propriétés : <br>
+<b>void <u>setConfigLocation</u>(Ressource configLocation); void <u>setDatasource</u>(Datasource datasource);  </b><br>
+Nous progressons... Notre fichier de configuration se précise et devient : (cette config est  dans le fichier [<b>applicationContext.xml</b>])<br>
+<IMG SRC="images/config2.jpg"><br>
+<ul>
+<li> lignes 2-3 : le bean " sqlMapClient " est de type [<b>SqlMapClientFactoryBean</b>]. De ce qui vient d’être expliqué, nous
+savons   que   lorsque   nous   demandons   à   Spring   une   instance   de   ce   bean,   nous   obtenons   un  objet   implémentant
+l’interface iBATIS [SqlMapClient]. C’est ce dernier objet qui sera donc obtenu en ligne 14.
+<li> lignes 7-9 : nous indiquons que le fichier de configuration nécessaire à l’objet iBATIS [<b>SqlMapClient</b>] s’appelle " sql-
+map-config-mysql.xml "   et   qu’il   doit   être   cherché   dans   le  ClassPath  de   l’application.   La   méthode
+[<b>SqlMapClientFactoryBean</b>].setConfigLocation est ici utilisée.
+<li> lignes   4-6   :   nous   initialisons   la   propriété   [<b>dataSource</b>]   de   [<b>SqlMapClientFactoryBean</b>]   avec   sa   méthode
+[setDataSource]. </ul>
+&nbsp;&nbsp;&nbsp;&nbsp;Ligne 5, nous faisons référence à un bean appelé " dataSource " qui reste à construire.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Il existe diverses implémentations de l’interface [<b>DataSource</b>] disponibles librement. Nous allons utiliser ici l’implémentation
+[<b>commons DBCP</b>] disponible à l’url [<b>http://jakarta.apache.org/commons/dbcp/</b>]. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;L’utilisation de  l’outil  [<b>commons DBCP</b>]  nécessite deux archives [<b>commons-dbcp,  commons-pool</b>]  qui  ont  été  toutes deux
+placées dans le dossier [lib] du projet.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;La classe [<b>BasicDataSource</b>] de [<b>commons DBCP</b>] fournit l’implémentation [<b>DataSource</b>] dont nous avons besoin :<br>
+<b>org.apache.commons.dbcp.BasicDataSource </b> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;Cette classe va nous fournir un pool de connexions pour accéder à la base de donnée de notre application.<br>
+Pour cela, il faut lui donner les informations dont elle a besoin pour créer les connexions du pool : <b></b>
+<ul>
+<li> le nom du pilote JDBC à utiliser – initialisé avec [<b>setDriverClassName</b>]
+<li> le nom de l’url de la base de données à exploiter - initialisé avec [setUrl]
+<li> l’identifiant  de  l’utilisateur propriétaire de  la connexion –  initialisé avec [<b>setUsername</b>]  (et  non pas setUserName
+comme on aurait pu s'y attendre)
+<li> son mot de passe - initialisé avec [<b>setPassword</b>] </ul>
+Le fichier de configuration de notre couche [<b>dao</b>] pourra être le suivant :(cette config est  dans le fichier [<b>applicationContext.xml</b>])<br>
+<IMG SRC="images/config3.jpg"><br>
+<ul>
+<li> lignes 7-9 : le nom du pilote MySql
+<li>lignes 11-13  : l’url de la base base de donnée. On fera particulièrement attention à l’écriture de celle-ci. Il
+ne doit y avoir aucun espace entre les balises <value> et l’url.
+<li>lignes 14-16  :   le propriétaire de  la connexion –  ici,   [<b>root</b>]  qui  est   l’administrateur
+<li>lignes 17-19 : son mot de passe [<b>root</b>]</ul>
+&nbsp;&nbsp;&nbsp;On a beaucoup progressé mais il reste toujours des points de configuration à élucider : la ligne 28 référence le fichier [<b>sql-map-
+config-mysql.xml</b>]   qui   doit   configurer   le   client   [<b>SqlMapClient</b>]   d’iBATIS.<br>
+Le fichier [sql-map-config-mysql.xml] est le suivant : <br>
+<IMG SRC="images/config4.jpg"><br>
+<ul>
+<li> ce fichier doit avoir <sqlMapConfig> comme balise racine (lignes 6 et 8)
+<li> ligne 7 : la balise <sqlMap> sert à désigner les fichiers qui contiennent les ordres SQL à exécuter.
+</ul>
+&nbsp;&nbsp;&nbsp;&nbsp;Le fichier [<b>personnes-mysql.xml</b>] décrit les ordres SQL qui vont être émis sur la table [<b>PERSONNES</b>] de la base de données. Son contenu est le suivant :<br>
+<IMG SRC="images/config5.jpg"><br>
+<ol>
+<li>le fichier doit avoir <sqlMap> comme balise racine (lignes 7 et 45)
+<li> lignes   9-10   :   pour   faciliter   l’écriture   du   fichier   on   donne   l’alias   (synonyme)   [<b>Personne.classe</b>]   à   la   classe
+[<b>istia.st.springmvc.personnes.entites.Personne</b>].
+<li>lignes 12-17 : fixe les correspondances entre colonnes de la table [<b>PERSONNES</b>] et champs de l’objet [<b>Personne</b>].
+<li>lignes 19-43 : les ordres SQL [<b>select</b>]
+</ol><p>
+<b><u>La couche [service]</u></b><br>
+L’implémentation [ServiceImpl] détient une référence sur  la couche [<b>dao</b>].  Celle-ci, sera initialisée par Spring au moment de l’instanciation de la couche [<b>service - ServiceImpl</b>]. Le fichier [<b>applicationContext.xml</b>] contient l’instanciation de la couche [<b>service</b>] :
+<IMG SRC="images/config6.jpg"><br>
+lignes 37-42 : configurent la couche [service]
+             </TD>
+          </TR>
+        </TABLE>
+    </BODY>
+</HTML>
